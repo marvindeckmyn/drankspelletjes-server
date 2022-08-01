@@ -35,7 +35,6 @@ func GetAccount(acc *accountModel.Account) error {
 	stmt := cdb.PrepareSelect("account", fields, "a", colNamesAccount, acc)
 	rows, err := dao.ExecuteStmt(stmt)
 	if err != nil {
-		log.Error("Account not found")
 		return &cdb.ErrQuery{Cause: err}
 	}
 
