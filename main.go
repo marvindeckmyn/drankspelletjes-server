@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/marvindeckmyn/drankspelletjes-server/auth"
 	"github.com/marvindeckmyn/drankspelletjes-server/cdb"
 	"github.com/marvindeckmyn/drankspelletjes-server/log"
 )
@@ -16,5 +18,14 @@ func initDB() {
 
 // main executes the main function.
 func main() {
+	r := gin.Default()
 	initDB()
+
+	r.POST("/api/auth/register", auth.Register)
+
+	log.Info("Starting on 1337")
+	err := r.Run("1337")
+	if err != nil {
+		panic(err)
+	}
 }
