@@ -24,7 +24,7 @@ func main() {
 	r.POST("/api/auth/register", auth.Register)
 
 	log.Info("Starting on 1337")
-	err := r.Run("1337")
+	err := r.Run(":1337")
 	if err != nil {
 		panic(err)
 	}
