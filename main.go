@@ -22,6 +22,7 @@ func main() {
 	initDB()
 
 	r.POST("/api/auth/register", auth.Register)
+	r.POST("/api/auth/login", auth.Login)
 
 	log.Info("Starting on 1337")
 	err := r.Run(":1337")
