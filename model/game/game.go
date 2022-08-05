@@ -18,5 +18,6 @@ type Game struct {
 	Necessities  *map[string]string `json:"necessities"`
 	Highlight    *bool              `json:"highlight"`
 	Views        *int32             `json:"views"`
+	Order        *int32             `json:"order"`
 	CreatedAt    *time.Time         `json:"created_at"`
 }
