@@ -16,6 +16,7 @@ type Game struct {
 	Credits      *string            `json:"credits"`
 	Description  *map[string]string `json:"description"`
 	Necessities  *map[string]string `json:"necessities"`
+	Highlight    *bool              `json:"highlight"`
 	Views        *int32             `json:"views"`
 	CreatedAt    *time.Time         `json:"created_at"`
 }
