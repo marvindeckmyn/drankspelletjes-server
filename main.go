@@ -21,7 +21,7 @@ func main() {
 	r := gin.Default()
 	initDB()
 
-	r.POST("/api/auth/register", auth.Register)
+	//r.POST("/api/auth/register", auth.Register)
 	r.POST("/api/auth/login", auth.Login)
 
 	log.Info("Starting on 1337")
