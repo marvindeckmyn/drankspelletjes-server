@@ -151,3 +151,37 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, nil)
 }
+
+// Logout to log out of an account.
+func Logout(c *gin.Context) {
+	accID, err := GetID(c)
+	if err != nil {
+		log.Error(err.Error())
+		c.JSON(http.StatusBadRequest, nil)
+		return
+	}
+
+	log.Info("%s is logging out", accID)
+
+	// Get account
+	acc := accountModel.Account{
+		ID: &accID,
+	}
+
+	err = accountDao.GetAccount(&acc)
+	if err != nil {
+		log.Error(err.Error())
+		if _, ok := err.(*cdb.ErrMissingResult); !ok {
+			c.JSON(http.StatusNotFound, nil)
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, nil)
+		return
+	}
+
+	// Remove cookie
+	c.SetCookie("drnkngg-token", "/", -1, "/", ".drankspelletjes.local", false, false)
+
+	c.JSON(http.StatusOK, nil)
+}
