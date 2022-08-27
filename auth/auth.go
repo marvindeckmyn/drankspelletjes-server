@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github.com/marvindeckmyn/drankspelletjes-server/cdb"
 	accountDao "github.com/marvindeckmyn/drankspelletjes-server/dao/account"
 	"github.com/marvindeckmyn/drankspelletjes-server/log"
 	accountModel "github.com/marvindeckmyn/drankspelletjes-server/model/account"
+	"github.com/marvindeckmyn/drankspelletjes-server/server"
 	"github.com/marvindeckmyn/drankspelletjes-server/types"
 	"github.com/marvindeckmyn/drankspelletjes-server/uuid"
 	"github.com/marvindeckmyn/drankspelletjes-server/validator"
@@ -24,7 +24,7 @@ func hashPassword(password string) (string, error) {
 }
 
 // Register to create an account.
-func Register(c *gin.Context) {
+func Register(rw server.ResponseWriter, r *server.Request) {
 	// Check body
 	body := struct {
 		Name     string `json:"name"`
@@ -39,10 +39,10 @@ func Register(c *gin.Context) {
 		"password": validator.IsString,
 	}
 
-	err := v.ValidateAndMarshalBody(c.Request.Body, &body)
+	err := v.ValidateAndMarshalBody(r.R.Body, &body)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -55,7 +55,7 @@ func Register(c *gin.Context) {
 	if err != nil {
 		if !strings.Contains(err.Error(), "No results") {
 			log.Error(err.Error())
-			c.JSON(http.StatusInternalServerError, nil)
+			rw.JSON(http.StatusInternalServerError, nil)
 			return
 		}
 	}
@@ -66,7 +66,7 @@ func Register(c *gin.Context) {
 	hash, err := hashPassword(body.Password)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, nil)
+		rw.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
@@ -80,11 +80,11 @@ func Register(c *gin.Context) {
 	err = accountDao.InsertAccount(&acc)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusCreated, nil)
+	rw.JSON(http.StatusCreated, nil)
 }
 
 // checkPasswordHash will check if the password is equal to the hash if hashed.
@@ -94,7 +94,7 @@ func checkPasswordHash(password, hash string) bool {
 }
 
 // Login to log in an account.
-func Login(c *gin.Context) {
+func Login(rw server.ResponseWriter, r *server.Request) {
 	// Check body
 	body := struct {
 		Email    string `json:"email"`
@@ -106,10 +106,10 @@ func Login(c *gin.Context) {
 		"password": validator.IsString,
 	}
 
-	err := v.ValidateAndMarshalBody(c.Request.Body, &body)
+	err := v.ValidateAndMarshalBody(r.R.Body, &body)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -124,17 +124,17 @@ func Login(c *gin.Context) {
 	if err != nil {
 		log.Error("Account not found with email %s", body.Email)
 		if _, ok := err.(*cdb.ErrMissingResult); !ok {
-			c.JSON(http.StatusNotFound, nil)
+			rw.JSON(http.StatusNotFound, nil)
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, nil)
+		rw.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
 	match := checkPasswordHash(body.Password, *acc.Password)
 	if !match {
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
@@ -142,22 +142,29 @@ func Login(c *gin.Context) {
 	jwt, err := createToken(&acc)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, nil)
+		rw.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
-	// Add cookie with JWT in it
-	c.SetCookie("drnkngg-token", jwt, 3600*24*7, "/", ".drankspelletjes.local", false, false)
+	cookie := &http.Cookie{
+		Name:   "drnkngg-token",
+		Value:  jwt,
+		Path:   "/",
+		Domain: ".drankspelletjes.local",
+		MaxAge: 3600 * 24 * 7,
+	}
 
-	c.JSON(http.StatusOK, nil)
+	http.SetCookie(rw.W, cookie)
+
+	rw.JSON(http.StatusOK, nil)
 }
 
 // Logout to log out of an account.
-func Logout(c *gin.Context) {
-	accID, err := GetID(c)
+func Logout(rw server.ResponseWriter, r *server.Request) {
+	accID, err := GetID(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -172,16 +179,24 @@ func Logout(c *gin.Context) {
 	if err != nil {
 		log.Error(err.Error())
 		if _, ok := err.(*cdb.ErrMissingResult); !ok {
-			c.JSON(http.StatusNotFound, nil)
+			rw.JSON(http.StatusNotFound, nil)
 			return
 		}
 
-		c.JSON(http.StatusInternalServerError, nil)
+		rw.JSON(http.StatusInternalServerError, nil)
 		return
 	}
 
 	// Remove cookie
-	c.SetCookie("drnkngg-token", "/", -1, "/", ".drankspelletjes.local", false, false)
+	cookie := &http.Cookie{
+		Name:   "drnkngg-token",
+		Value:  "",
+		Path:   "/",
+		Domain: ".drankspelletjes.local",
+		MaxAge: -1,
+	}
 
-	c.JSON(http.StatusOK, nil)
+	http.SetCookie(rw.W, cookie)
+
+	rw.JSON(http.StatusOK, nil)
 }

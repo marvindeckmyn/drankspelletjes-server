@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"github.com/marvindeckmyn/drankspelletjes-server/log"
 	accountModel "github.com/marvindeckmyn/drankspelletjes-server/model/account"
+	"github.com/marvindeckmyn/drankspelletjes-server/server"
 	"github.com/marvindeckmyn/drankspelletjes-server/uuid"
 )
 
@@ -50,13 +50,13 @@ func ParseToken(tokenString string) (jwt.MapClaims, error) {
 }
 
 // GetID to get the ID of a JWT
-func GetID(c *gin.Context) (uuid.UUID, error) {
-	jwt, err := c.Cookie("drnkngg-token")
+func GetID(r *server.Request) (uuid.UUID, error) {
+	jwt, err := r.Cookie("drnkngg-token")
 	if err != nil {
 		return uuid.UUID{}, err
 	}
 
-	parsedToken, err := ParseToken(jwt)
+	parsedToken, err := ParseToken(*jwt)
 	if err != nil {
 		return uuid.UUID{}, err
 	}

@@ -4,13 +4,13 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/marvindeckmyn/drankspelletjes-server/auth"
 	accountDao "github.com/marvindeckmyn/drankspelletjes-server/dao/account"
 	gameDao "github.com/marvindeckmyn/drankspelletjes-server/dao/game"
 	"github.com/marvindeckmyn/drankspelletjes-server/log"
 	accountModel "github.com/marvindeckmyn/drankspelletjes-server/model/account"
 	gameModel "github.com/marvindeckmyn/drankspelletjes-server/model/game"
+	"github.com/marvindeckmyn/drankspelletjes-server/server"
 	"github.com/marvindeckmyn/drankspelletjes-server/types"
 	"github.com/marvindeckmyn/drankspelletjes-server/uuid"
 	"github.com/marvindeckmyn/drankspelletjes-server/validator"
@@ -44,14 +44,14 @@ func validateCategoryBody(requestBody io.Reader) (*CategoryBody, error) {
 }
 
 // validateCategoryURL checks if the product categogry URL is valid.
-func validateCategoryURL(c *gin.Context) (*CategoryURL, error) {
+func validateCategoryURL(r *server.Request) (*CategoryURL, error) {
 	v := validator.V{
 		"id": validator.IsUUIDV4,
 	}
 
 	url := CategoryURL{}
 
-	err := v.ValidateAndMarshalURL(c.Request, &url)
+	err := v.ValidateAndMarshalURL(r, &url)
 	if err != nil {
 		log.Error(err.Error())
 		return nil, err
@@ -61,24 +61,24 @@ func validateCategoryURL(c *gin.Context) (*CategoryURL, error) {
 }
 
 // GetCategories to retrieve all the categories.
-func GetCategories(c *gin.Context) {
+func GetCategories(rw server.ResponseWriter, r *server.Request) {
 	categories, err := gameDao.GetCategories()
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, categories)
+	rw.JSON(http.StatusOK, categories)
 }
 
 // GetCategoryById to retrieve a category by UUID.
-func GetCategoryById(c *gin.Context) {
+func GetCategoryById(rw server.ResponseWriter, r *server.Request) {
 	// Get category
-	url, err := validateCategoryURL(c)
+	url, err := validateCategoryURL(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -89,20 +89,20 @@ func GetCategoryById(c *gin.Context) {
 	err = gameDao.GetCategory(&category)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, category)
+	rw.JSON(http.StatusOK, category)
 }
 
 // PostCategory inserts a category in the database.
-func PostCategory(c *gin.Context) {
+func PostCategory(rw server.ResponseWriter, r *server.Request) {
 	// Check account
-	accID, err := auth.GetID(c)
+	accID, err := auth.GetID(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
@@ -112,15 +112,15 @@ func PostCategory(c *gin.Context) {
 
 	err = accountDao.GetAccount(&acc)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
 	// Validate category body
-	body, err := validateCategoryBody(c.Request.Body)
+	body, err := validateCategoryBody(r.R.Body)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -134,20 +134,20 @@ func PostCategory(c *gin.Context) {
 	err = gameDao.InsertCategory(&category)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, category)
+	rw.JSON(http.StatusOK, category)
 }
 
 // UpdateCategory updates a selected category the database.
-func UpdateCategory(c *gin.Context) {
+func UpdateCategory(rw server.ResponseWriter, r *server.Request) {
 	// Check account
-	accID, err := auth.GetID(c)
+	accID, err := auth.GetID(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
@@ -157,23 +157,23 @@ func UpdateCategory(c *gin.Context) {
 
 	err = accountDao.GetAccount(&acc)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
 	// Validate category URL
-	url, err := validateCategoryURL(c)
+	url, err := validateCategoryURL(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
 	// Validate category body
-	body, err := validateCategoryBody(c.Request.Body)
+	body, err := validateCategoryBody(r.R.Body)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -185,7 +185,7 @@ func UpdateCategory(c *gin.Context) {
 	err = gameDao.GetCategory(&category)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -200,20 +200,20 @@ func UpdateCategory(c *gin.Context) {
 	err = gameDao.UpdateCategory(&category, selectors)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, category)
+	rw.JSON(http.StatusOK, category)
 }
 
 // DeletCategory deletes a category in the database.
-func DeleteCategory(c *gin.Context) {
+func DeleteCategory(rw server.ResponseWriter, r *server.Request) {
 	// Check account
-	accID, err := auth.GetID(c)
+	accID, err := auth.GetID(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
@@ -223,15 +223,15 @@ func DeleteCategory(c *gin.Context) {
 
 	err = accountDao.GetAccount(&acc)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, nil)
+		rw.JSON(http.StatusUnauthorized, nil)
 		return
 	}
 
 	// Validate category URL
-	url, err := validateCategoryURL(c)
+	url, err := validateCategoryURL(r)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -243,7 +243,7 @@ func DeleteCategory(c *gin.Context) {
 	err = gameDao.GetCategory(&category)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
@@ -251,9 +251,9 @@ func DeleteCategory(c *gin.Context) {
 	err = gameDao.DeleteCategory(&category)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, nil)
+		rw.JSON(http.StatusBadRequest, nil)
 		return
 	}
 
-	c.JSON(http.StatusOK, nil)
+	rw.JSON(http.StatusOK, nil)
 }
