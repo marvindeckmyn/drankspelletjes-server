@@ -7,4 +7,5 @@ type GameCategory struct {
 	Name        *map[string]string `json:"name"`
 	Description *map[string]string `json:"description"`
 	Image       *string            `json:"image"`
+	Order       *int32             `json:"order"`
 }

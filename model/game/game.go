@@ -13,7 +13,7 @@ type Game struct {
 	Name          *map[string]string `json:"name"`
 	Alias         *map[string]string `json:"alias"`
 	PlayerCount   *int32             `json:"player_count"`
-	Img           *string            `json:"img"`
+	Image         *string            `json:"image"`
 	Credits       *string            `json:"credits"`
 	Description   *map[string]string `json:"description"`
 	Highlight     *bool              `json:"highlight"`
