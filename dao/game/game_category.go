@@ -13,7 +13,7 @@ var colNamesCategory = map[string]string{
 	"Order": `"order"`,
 }
 
-// unmarshalCategory parses the database row the to category object.
+// unmarshalCategory parses the database row to the category object.
 func unmarshalCategory(category *gameModel.GameCategory, r cdb.CdbResult) error {
 	r.UUID("id", &category.ID)
 	r.MapStrStr("name", &category.Name)
@@ -31,9 +31,9 @@ func GetCategories() ([]*gameModel.GameCategory, error) {
 	categories := []*gameModel.GameCategory{}
 
 	stmt := cdb.Prepare(`
-			select id, name, "order"
-			from game_category
-			order by "order"
+		select id, name, "order"
+		from game_category
+		order by "order"
 	`)
 
 	rows, err := dao.ExecuteStmt(stmt)
