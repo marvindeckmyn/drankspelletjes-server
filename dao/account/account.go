@@ -1,4 +1,4 @@
-package accountModel
+package accountDao
 
 import (
 	"github.com/marvindeckmyn/drankspelletjes-server/cdb"

@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/marvindeckmyn/drankspelletjes-server/server"
 	"github.com/marvindeckmyn/drankspelletjes-server/uuid"
 )
 
@@ -298,12 +298,12 @@ func (instance V) ValidateAndMarshalBody(requestBody io.Reader, val interface{})
 	return &ErrInvalidContent{Cause: strings.Join(errs, ", ")}
 }
 
-func (instance V) ValidateAndMarshalURL(r *server.Request, val interface{}) error {
+func (instance V) ValidateAndMarshalURL(r *http.Request, val interface{}) error {
 	errs := []string{}
 	urlParams := map[string]string{}
 
 	for key, validationFunc := range instance {
-		val := r.GetURLParam(key)
+		val := r.URL.Query().Get(key)
 		valid := validationFunc(val)
 		if !valid {
 			errs = append(errs, key)

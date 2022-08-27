@@ -5,6 +5,7 @@ import (
 	"github.com/marvindeckmyn/drankspelletjes-server/account"
 	"github.com/marvindeckmyn/drankspelletjes-server/auth"
 	"github.com/marvindeckmyn/drankspelletjes-server/cdb"
+	"github.com/marvindeckmyn/drankspelletjes-server/game"
 	"github.com/marvindeckmyn/drankspelletjes-server/log"
 )
 
@@ -27,6 +28,12 @@ func main() {
 	//r.POST("/api/auth/register", auth.Register)
 	r.POST("/api/auth/login", auth.Login)
 	r.POST("/api/auth/logout", auth.Logout)
+
+	r.GET("/api/category", game.GetCategories)
+	r.GET("/api/category/:id", game.GetCategoryById)
+	r.POST("/api/category", game.PostCategory)
+	r.PUT("/api/category/:id", game.UpdateCategory)
+	r.DELETE("/api/category/:id", game.DeleteCategory)
 
 	log.Info("Starting on 1337")
 	err := r.Run(":1337")
