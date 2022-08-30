@@ -124,7 +124,7 @@ func Login(rw server.ResponseWriter, r *server.Request) {
 	if err != nil {
 		log.Error("Account not found with email %s", body.Email)
 		if _, ok := err.(*cdb.ErrMissingResult); !ok {
-			rw.JSON(http.StatusNotFound, nil)
+			rw.JSON(http.StatusUnauthorized, nil)
 			return
 		}
 
