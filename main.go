@@ -35,6 +35,11 @@ func main() {
 	s.Put("/api/category/{id}", game.UpdateCategory)
 	s.Delete("/api/category/{id}", game.DeleteCategory)
 
+	s.Get("/api/game/category/{id}", game.GetGamesByCategory)
+	s.Post("/api/game", game.PostGame)
+
+	s.Post("/api/game/necessity", game.PostGameNecessity)
+
 	log.Info("Starting on 1337")
 	err := s.ListenAndServe(1337)
 	if err != nil {

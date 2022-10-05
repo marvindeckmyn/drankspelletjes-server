@@ -43,7 +43,7 @@ func validateCategoryBody(requestBody io.Reader) (*CategoryBody, error) {
 	return &body, nil
 }
 
-// validateCategoryURL checks if the product categogry URL is valid.
+// validateCategoryURL checks if the product category URL is valid.
 func validateCategoryURL(r *server.Request) (*CategoryURL, error) {
 	v := validator.V{
 		"id": validator.IsUUIDV4,
@@ -194,7 +194,7 @@ func UpdateCategory(rw server.ResponseWriter, r *server.Request) {
 	category.Order = &body.Order
 
 	selectors := map[string]interface{}{
-		"ID": *&category.ID,
+		"ID": category.ID,
 	}
 
 	err = gameDao.UpdateCategory(&category, selectors)
