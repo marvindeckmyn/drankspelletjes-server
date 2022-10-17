@@ -28,7 +28,6 @@ type GameBody struct {
 	Highlight    bool              `json:"highlight"`
 	Img          string            `json:"img"`
 	PlayerCount  int32             `json:"player_count"`
-	Credits      string            `json:"credits"`
 	Order        int32             `json:"order"`
 }
 
@@ -46,7 +45,6 @@ func validateGameBody(requestBody io.Reader) (*GameBody, error) {
 		"highlight":     validator.IsBool,
 		"img":           validator.IsString,
 		"player_count":  validator.IsInt,
-		"credits":       validator.IsString,
 		"order":         validator.IsInt,
 	}
 
@@ -170,7 +168,6 @@ func PostGame(rw server.ResponseWriter, r *server.Request) {
 		Highlight:    &body.Highlight,
 		Img:          &body.Img,
 		PlayerCount:  &body.PlayerCount,
-		Credits:      &body.Credits,
 		Order:        &body.Order,
 		CreatedAt:    types.Ptr(time.Now().UTC()),
 	}

@@ -14,7 +14,6 @@ var colNamesGame = map[string]string{
 	"Alias":        "alias",
 	"PlayerCount":  "player_count",
 	"Img":          "img",
-	"Credits":      "credits",
 	"Description":  "description",
 	"Highlight":    "highlight",
 	"Views":        "views",
@@ -30,7 +29,6 @@ func unmarshalGame(game *gameModel.Game, r cdb.CdbResult) error {
 	r.MapStrStr("alias", &game.Alias)
 	r.Int32("player_count", &game.PlayerCount)
 	r.Str("img", &game.Img)
-	r.Str("credits", &game.Credits)
 	r.MapStrStr("description", &game.Description)
 	r.Bool("highlight", &game.Highlight)
 	r.Int32("order", &game.Order)
@@ -48,7 +46,7 @@ func GetGamesByCategory(category *gameModel.GameCategory) ([]*gameModel.Game, er
 
 	stmt := cdb.Prepare(`
 		select id, game_category, name, alias,
-			player_count, img, credits,
+			player_count, img,
 			description, highlight, views, "order"
 		from game
 		where game_category = :category:
