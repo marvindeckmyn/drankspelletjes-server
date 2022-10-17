@@ -16,7 +16,6 @@ var colNamesGame = map[string]string{
 	"Img":          "img",
 	"Description":  "description",
 	"Highlight":    "highlight",
-	"Views":        "views",
 	"Order":        `"order"`,
 	"CreatedAt":    "created_at",
 }
@@ -47,7 +46,7 @@ func GetGamesByCategory(category *gameModel.GameCategory) ([]*gameModel.Game, er
 	stmt := cdb.Prepare(`
 		select id, game_category, name, alias,
 			player_count, img,
-			description, highlight, views, "order"
+			description, highlight, "order"
 		from game
 		where game_category = :category:
 		order by "order"
